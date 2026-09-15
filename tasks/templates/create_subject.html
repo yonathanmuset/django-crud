@@ -1,0 +1,12 @@
+{% extends "base.html" %} {% block content %}
+<main class="container py-5">
+  <div class="col-md-6 mx-auto">
+    <form method="post" class="card card-body">
+      {% csrf_token %}
+      <h1>Crear asignatura</h1>
+      {{ form.as_p }}
+      <button class="btn btn-primary">Crear asignatura</button>
+    </form>
+  </div>
+</main>
+{% endblock %}

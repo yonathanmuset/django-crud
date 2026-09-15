@@ -1,0 +1,43 @@
+{% extends "base.html" %} {% block content %}
+<main class="container py-5">
+  <div class="col-md-6 mx-auto">
+    <form method="post" class="card card-body">
+      {% csrf_token %}
+      <h1>Inscribir estudiantes</h1>
+      <p>Asignatura: {{ subject.name }}</p>
+      {{ form.non_field_errors }}
+      <div class="mb-3">
+        {{ form.students.errors }} {{ form.students.label_tag }}
+        <div id="students-list">{{ form.students }}</div>
+        <small class="form-text">
+          Marca solo los estudiantes que deben ver esta asignatura. Los que
+          dejes sin marcar se quitarán.
+        </small>
+        <div class="form-check mt-3">
+          {{ form.select_all }}
+          <label class="form-check-label" for="id_select_all">
+            Seleccionar todos los estudiantes
+          </label>
+        </div>
+      </div>
+      <button class="btn btn-primary">Guardar inscripción</button>
+    </form>
+  </div>
+</main>
+<script>
+  const selectAll = document.getElementById("id_select_all");
+  const students = document.querySelectorAll("input[name='students']");
+
+  selectAll.addEventListener("change", function () {
+    for (const student of students) {
+      student.checked = selectAll.checked;
+    }
+  });
+
+  for (const student of students) {
+    student.addEventListener("change", function () {
+      selectAll.checked = [...students].every((item) => item.checked);
+    });
+  }
+</script>
+{% endblock %}

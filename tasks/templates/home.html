@@ -1,26 +1,73 @@
-{% extends "base.html" %}
-{% block content %}
-<main class="container py-5">
-    <section class="card card-body">
-        <h1 class="display-1 text-center">django app</h1>
-    
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repudiandae ratione ipsam ullam explicabo consectetur eius facere accusantium excepturi quia. Eius, odit. Quibusdam consectetur vero nobis dolorum ipsum natus repudiandae necessitatibus!
-            Debitis aspernatur quisquam, ullam in consequuntur accusamus necessitatibus eum natus, libero iure qui nesciunt deserunt nihil consectetur error, inventore autem? Dolorum asperiores cupiditate tenetur, ullam delectus minus exercitationem est quibusdam?
-            Eius eveniet nesciunt obcaecati distinctio magnam. Accusantium dolores deserunt natus error distinctio vel at repellat, ratione architecto animi repellendus voluptatum blanditiis cum asperiores voluptate tenetur exercitationem hic totam ab quia?
-            Veniam, ratione doloribus cumque laudantium adipisci culpa repellendus, ea quia beatae nostrum pariatur officia, commodi quasi? Illo assumenda nemo qui. Odio iusto odit cupiditate non inventore! Nisi, error quod! At!
-            Est quibusdam ex fugit a, nemo maiores! Sapiente illo, aliquam eligendi repellendus assumenda non laboriosam quia similique deserunt consequatur vel soluta nemo qui dolorem consectetur! Modi aliquam quia sequi suscipit?
-            Natus repellendus soluta earum minima nam, aperiam repudiandae, adipisci quisquam veniam maiores explicabo aspernatur molestiae mollitia voluptatibus fugiat non harum dicta illo atque perspiciatis! Nesciunt quas 
+{% extends "base.html" %} {% block content %}
+<main class="page-wrap py-4 py-md-5">
+  <section class="surface p-4 p-md-5 overflow-hidden">
+    <div class="hero-layout">
+      {% if user.is_authenticated %}
+      <div class="col-lg-7">
+        <div class="eyebrow mb-3">Panel personalizado</div>
+        <h1 class="display-3 fw-bold mb-4">Bienvenido/a, {{ user_name }}</h1>
+        <p class="lead text-secondary mb-4">
+          {% if user_role == "Profesor" %}Dictas {{ subject_count }} asignatura(s){% endif %}
+          {% if user_role == "Estudiante" %}Inscrito/a en {{ subject_count }} asignatura(s){% endif %}
         </p>
-        <div class="text-center">
-            <a class="btn btn-secondary" href="/signin/">
-                signin
-            </a>
-            <a class="btn btn-dark" href="/signup/">
-                signup
-            </a>
+        <div class="hero-actions">
+          <a class="btn btn-outline-primary btn-lg" href="{% url 'signout' %}">Cerrar sesión</a>
         </div>
-    </section>
+      </div>
+      <div class="hero-aside">
+        <div
+          class="p-4 rounded-4"
+          style="background: var(--navy); color: white"
+        >
+          <p class="eyebrow" style="color: #f3b39e">Resumen rápido</p>
+          <h2 class="h3 mb-4">Información de tu cuenta</h2>
+          <div class="d-flex justify-content-between border-bottom border-light border-opacity-25 py-3">
+            <span>Rol</span><strong>{{ user_role }}</strong>
+          </div>
+          <div class="d-flex justify-content-between border-bottom border-light border-opacity-25 py-3">
+            <span>Asignaturas</span><strong>{{ subject_count }}</strong>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="col-lg-7">
+        <div class="eyebrow mb-3">Aula organizada, progreso visible</div>
+        <h1 class="display-3 fw-bold mb-4">La clase sigue avanzando.</h1>
+        <p class="lead text-secondary mb-4">
+          NexusApp reúne asignaturas, actividades y entregas en un espacio claro
+          para profesores y estudiantes.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary btn-lg" href="/signup/">Crear una cuenta</a>
+          <a class="btn btn-outline-dark btn-lg" href="/signin/"
+            >Iniciar sesión</a
+          >
+        </div>
+      </div>
+      <div class="hero-aside">
+        <div
+          class="p-4 rounded-4"
+          style="background: var(--navy); color: white"
+        >
+          <p class="eyebrow" style="color: #f3b39e">NexusApp en acción</p>
+          <h2 class="h3 mb-4">Todo lo importante, en un vistazo.</h2>
+          <div
+            class="d-flex justify-content-between border-bottom border-light border-opacity-25 py-3"
+          >
+            <span>Asignaturas</span><strong>Organizadas</strong>
+          </div>
+          <div
+            class="d-flex justify-content-between border-bottom border-light border-opacity-25 py-3"
+          >
+            <span>Entregas</span><strong>En seguimiento</strong>
+          </div>
+          <div class="d-flex justify-content-between py-3">
+            <span>Calificaciones</span><strong>0 a 20</strong>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </section>
 </main>
-
-    {% endblock %}
+{% endblock %}

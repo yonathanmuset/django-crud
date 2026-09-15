@@ -1,0 +1,40 @@
+<article class="list-group-item">
+  <div class="d-flex justify-content-between align-items-start gap-3">
+    <div>
+      <h3 class="h5 mb-1">{{ task.title }}</h3>
+      <p class="text-secondary mb-2">{{ task.description }}</p>
+    </div>
+    {% if task.is_graded %}
+    <span class="badge text-bg-success">Calificada</span>
+    {% elif task.submitted %}
+    <span class="badge text-bg-warning">Entrega recibida</span>
+    {% else %}
+    <span class="badge text-bg-secondary">Enviada</span>
+    {% endif %}
+  </div>
+  <div class="small text-secondary mb-3">
+    <span>Estudiante: {{ task.student.username }}</span>
+    <span class="ms-3">Asignatura: {{ task.subject.name }}</span>
+    <span class="ms-3">Enviada: {{ task.created|date:"d/m/Y H:i" }}</span>
+  </div>
+  {% if task.submitted %}
+  <p class="mb-3">El estudiante entregó la actividad.</p>
+  {% endif %}
+  <div class="d-flex justify-content-between align-items-center">
+    <span>
+      {% if task.is_graded %} Nota: <strong>{{ task.score }}/20</strong>
+      {% else %} Sin calificar {% endif %}
+    </span>
+    {% if task.submitted and not task.is_graded %}
+    <a class="btn btn-primary btn-sm" href="{% url 'grade_task' task.id %}"
+      >Revisar y calificar</a
+    >
+    {% elif task.is_graded %}
+    <a
+      class="btn btn-outline-secondary btn-sm"
+      href="{% url 'grade_task' task.id %}"
+      >Ver calificación</a
+    >
+    {% endif %}
+  </div>
+</article>

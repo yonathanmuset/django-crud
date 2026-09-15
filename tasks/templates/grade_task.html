@@ -1,0 +1,62 @@
+{% extends "base.html" %} {% block content %}
+<main class="page-wrap py-4 py-md-5">
+  <div class="task-form-shell">
+    <div class="card card-body p-4 p-md-5 mb-4">
+      <div class="eyebrow mb-2">Revisión de entrega</div>
+      <h1 class="h3">{{ task.title }}</h1>
+      <p class="text-secondary mb-1">
+        Estudiante: <strong>{{ task.student.username }}</strong>
+      </p>
+      <p class="text-secondary">Asignatura: {{ task.subject.name }}</p>
+      <hr />
+      <h2 class="h5">Actividad solicitada</h2>
+      <p>{{ task.description }}</p>
+      <p class="small text-secondary mb-0">
+        Fecha límite: {{ task.due_date|date:"d/m/Y H:i" }}
+      </p>
+    </div>
+
+    {% if task.submitted %}
+    <div class="card card-body p-4 p-md-5 mb-4">
+      <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+        <h2 class="h4 mb-0">Entrega del estudiante</h2>
+        <span class="badge text-bg-success">Recibida</span>
+      </div>
+      <p class="small text-secondary">
+        Enviada el {{ task.submission.submitted_at|date:"d/m/Y H:i" }}
+      </p>
+      {% if task.submission.text %}
+      <h3 class="h6">Respuesta escrita</h3>
+      <div
+        class="p-3 rounded-3 mb-3"
+        style="background: #f1f5f2; white-space: pre-wrap"
+      >
+        {{ task.submission.text }}
+      </div>
+      {% endif %} {% if task.submission.file %}
+      <h3 class="h6">Archivo adjunto</h3>
+      <a
+        class="btn btn-outline-secondary align-self-start"
+        href="{{ task.submission.file.url }}"
+        target="_blank"
+        rel="noopener"
+        >Abrir archivo entregado</a
+      >
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+      Esta actividad no tiene una entrega. La nota automática corresponde a una
+      actividad vencida.
+    </div>
+    {% endif %}
+
+    <form method="post" class="card card-body p-4 p-md-5">
+      {% csrf_token %}
+      <h2 class="h4">Calificación</h2>
+      {{ form.as_p }}
+      <button class="btn btn-primary">Guardar calificación</button>
+    </form>
+  </div>
+</main>
+{% endblock %}

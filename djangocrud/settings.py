@@ -12,7 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
-import dj_database_url
+import secrets
+import importlib.util
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,16 +22,32 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", default="your secret key")
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = "RENDER" not in os.environ
+debug_value = os.environ.get("DEBUG")
+DEBUG = (
+    debug_value.lower() in {"1", "true", "yes"}
+    if debug_value is not None
+    else not bool(os.environ.get("RENDER") or os.environ.get("DATABASE_URL"))
+)
 
-ALLOWED_HOSTS = []
-RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+# Production must always receive SECRET_KEY from its environment.
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = secrets.token_urlsafe(50)
+    else:
+        raise RuntimeError("SECRET_KEY must be configured when DEBUG is False")
+
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+    if host.strip()
+]
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
 
 
 # Application definition
@@ -45,8 +62,11 @@ INSTALLED_APPS = [
     "tasks",
 ]
 
+AUTH_USER_MODEL = "tasks.User"
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -54,6 +74,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+if importlib.util.find_spec("whitenoise"):
+    MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
 
 ROOT_URLCONF = "djangocrud.urls"
 
@@ -70,7 +92,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
             ],
         },
-    },
+    }
 ]
 
 WSGI_APPLICATION = "djangocrud.wsgi.application"
@@ -85,6 +107,15 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL:
+    import dj_database_url
+
+    DATABASES["default"] = dj_database_url.parse(
+        DATABASE_URL,
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 
 
 # Password validation
@@ -122,6 +153,32 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", BASE_DIR / "media"))
+
+STATIC_STORAGE_BACKEND = (
+    "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    if importlib.util.find_spec("whitenoise")
+    else "django.contrib.staticfiles.storage.StaticFilesStorage"
+)
+STORAGES = {"staticfiles": {"BACKEND": STATIC_STORAGE_BACKEND}}
+
+if os.environ.get("AWS_STORAGE_BUCKET_NAME"):
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+    }
+    AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
+    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME")
+    AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL")
+    AWS_DEFAULT_ACL = None
+    AWS_QUERYSTRING_AUTH = False
+else:
+    STORAGES["default"] = {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    }
 
 LOGIN_URL = "/signin"
 
@@ -129,3 +186,12 @@ LOGIN_URL = "/signin"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True

@@ -1,0 +1,98 @@
+{% extends "base.html" %} {% block content %}
+<main class="page-wrap py-4 py-md-5">
+  <h1 class="mb-4">Mi panel de estudiante</h1>
+
+  {% for notification in notifications %}
+  <div
+    class="alert alert-info d-flex justify-content-between align-items-center"
+    role="alert"
+  >
+    <span><strong>Nueva asignatura:</strong> {{ notification.message }}</span>
+    <form
+      method="post"
+      action="{% url 'mark_notification_read' notification.id %}"
+    >
+      {% csrf_token %}
+      <button class="btn btn-sm btn-outline-primary" type="submit">
+        Entendido
+      </button>
+    </form>
+  </div>
+  {% endfor %}
+
+  <h2 class="h4">Mis asignaturas</h2>
+{% if subjects %}
+  <p class="mb-4">
+    {% for subject in subjects %}
+      {{ subject.name }}{% if not forloop.last %}, {% endif %}
+    {% endfor %}
+  </p>
+{% else %}
+  <p class="mb-4">No estás inscrito en ninguna asignatura.</p>
+{% endif %}
+
+  <div class="dashboard-columns">
+    <section class="dashboard-column">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">Tareas pendientes</h2>
+        <span class="badge text-bg-warning">{{ pending_tasks|length }}</span>
+      </div>
+      <div class="list-group">
+        {% if pending_tasks %} {% for task in pending_tasks %}
+        <article class="list-group-item">
+          <h3 class="h5">{{ task.title }}</h3>
+          <p>{{ task.description }}</p>
+          <p>Profesor: {{ task.teacher.username }}</p>
+          <p>Asignatura: {{ task.subject.name }}</p>
+          <p>Fecha límite: {{ task.due_date|date:"d/m/Y H:i" }}</p>
+          {% if not task.submitted and not task.overdue %}
+          <a class="btn btn-success" href="{% url 'submit_task' task.id %}"
+            >Entregar actividad</a
+          >
+          {% elif task.score == 1 %}
+          <span class="badge text-bg-danger"
+            >Vencida: calificación automática 01</span
+          >
+          {% endif %}
+        </article>
+        {% endfor %} {% else %}
+        <p class="text-muted">No tienes tareas pendientes.</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="dashboard-column">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">Tareas completadas y entregadas</h2>
+        <span class="badge text-bg-success">{{ completed_tasks|length }}</span>
+      </div>
+      <div class="list-group">
+        {% if completed_tasks %} {% for task in completed_tasks %}
+        <article class="list-group-item">
+          <h3 class="h5">{{ task.title }}</h3>
+          <p>{{ task.description }}</p>
+          <p>Asignatura: {{ task.subject.name }}</p>
+          <p>Estado: <span class="badge text-bg-success">Completada</span></p>
+          <p>
+            {% if task.is_graded and task.passed %}Nota: {{ task.score }}/20 ·
+            Aprobada{% elif task.is_graded %}Nota: {{ task.score }}/20 · No
+            aprobada{% else %}Nota: Pendiente de calificación{% endif %}
+          </p>
+          <form
+            method="post"
+            action="{% url 'archive_task_for_student' task.id %}"
+          >
+            {% csrf_token %}
+            <button class="btn btn-outline-danger btn-sm" type="submit">
+              Quitar de mi lista
+            </button>
+          </form>
+        </article>
+        {% endfor %} {% else %}
+        <p class="text-muted">Todavía no tienes tareas completadas.</p>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+</main>
+{% endblock %}

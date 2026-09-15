@@ -1,54 +1,263 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Django crud aplication</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css
-    ">
-</head>
-<body>
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NexusApp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+    <style>
+      :root {
+        --ink: #17212b;
+        --muted: #687684;
+        --paper: #f5f7f4;
+        --surface: #ffffff;
+        --accent: #e16b46;
+        --accent-dark: #b94d2f;
+        --line: #dfe6e1;
+        --navy: #17324d;
+      }
 
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 80% 0%, #e6f0e6 0, transparent 34%),
+          var(--paper);
+        color: var(--ink);
+        font-family: "DM Sans", sans-serif;
+      }
+      h1,
+      h2,
+      h3,
+      .navbar-brand {
+        font-family: "Space Grotesk", sans-serif;
+      }
+      .navbar {
+        background: var(--navy) !important;
+        box-shadow: 0 8px 24px rgba(23, 50, 77, 0.14);
+      }
+      .navbar-brand {
+        letter-spacing: -0.04em;
+        font-size: 1.35rem;
+      }
+      .navbar .nav-link {
+        color: rgba(255, 255, 255, 0.72) !important;
+        font-weight: 600;
+      }
+      .navbar .nav-link:hover {
+        color: #fff !important;
+      }
+      .surface {
+        background: rgba(255, 255, 255, 0.88);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        box-shadow: 0 18px 45px rgba(23, 50, 77, 0.08);
+      }
+      .card {
+        border-color: var(--line);
+        border-radius: 18px;
+        box-shadow: 0 14px 32px rgba(23, 50, 77, 0.07);
+      }
+      .btn-primary {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+      .btn-primary:hover {
+        background: var(--accent-dark);
+        border-color: var(--accent-dark);
+      }
+      .btn-dark {
+        background: var(--navy);
+        border-color: var(--navy);
+      }
+      .form-control,
+      .form-select {
+        border-color: #cdd8d1;
+        border-radius: 10px;
+        padding: 0.72rem 0.85rem;
+      }
+      .form-control:focus,
+      .form-select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 0.2rem rgba(225, 107, 70, 0.16);
+      }
+      .form-label {
+        font-weight: 600;
+      }
+      .list-group-item {
+        border-color: var(--line);
+        padding: 1.15rem;
+      }
+      .eyebrow {
+        color: var(--accent-dark);
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .page-wrap {
+        width: min(1180px, calc(100% - 2rem));
+        margin-inline: auto;
+      }
+      .flex-row-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+      .dashboard-columns {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 1.25rem;
+      }
+      .dashboard-column {
+        flex: 1 1 320px;
+        min-width: 0;
+      }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+      .list-group {
+        min-width: 0;
+      }
+      .list-group-item {
+        overflow-wrap: anywhere;
+      }
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+      }
+      .hero-layout {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: clamp(2rem, 6vw, 5rem);
+      }
+      .hero-layout > div:first-child {
+        flex: 1 1 480px;
+        min-width: 0;
+      }
+      .hero-aside {
+        flex: 1 1 280px;
+        min-width: 0;
+      }
+      .task-form-shell {
+        width: min(760px, 100%);
+        margin-inline: auto;
+      }
+      @media (max-width: 575.98px) {
+        .page-wrap {
+          width: min(100% - 1rem, 100%);
+        }
+        .navbar .container {
+          padding-inline: 1rem;
+        }
+        .navbar-collapse {
+          padding: 0.75rem 0 0.25rem;
+        }
+        .navbar-nav {
+          gap: 0.15rem;
+        }
+        .surface {
+          border-radius: 14px;
+        }
+        h1.display-3 {
+          font-size: clamp(2.35rem, 13vw, 3.5rem);
+        }
+        .hero-actions .btn {
+          flex: 1 1 100%;
+        }
+        .toolbar .btn {
+          width: 100%;
+        }
+        .list-group-item {
+          padding: 1rem;
+        }
+        .small {
+          font-size: 0.82rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
     <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
-        <div class="container">
-          <a class="navbar-brand" href="#">django app</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a href="/" class="nav-link">home</a>
-                </li class="nav-item">
-                {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a href="/tasks" class="nav-link">tasks pending</a>
-                </li >
-                <li class="nav-item">
-                    <a href="/tasks_completed" class="nav-link">tasks completed</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/create/task/" class="nav-link"> create tasks</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/signout" class="nav-link">logout</a>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                  <a href="/signup" class="nav-link">signup</a>
-              </li>
-              <li class="nav-item">
-                  <a href="/signin" class="nav-link">signin</a>
-              </li>
-              {% endif %}
-              </li>
-            </ul>
-          </div>
+      <div class="container">
+        <a class="navbar-brand" href="/">NexusApp</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a href="/" class="nav-link">Inicio</a>
+            </li>
+            {% if user.is_authenticated %} {% if user.is_profesor %}
+            <li class="nav-item">
+              <a href="{% url 'profesor_dashboard' %}" class="nav-link"
+                >Panel</a
+              >
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'create_task' %}" class="nav-link">Nueva tarea</a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'create_subject' %}" class="nav-link"
+                >Asignatura</a
+              >
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a href="{% url 'estudiante_dashboard' %}" class="nav-link"
+                >Mi panel</a
+              >
+            </li>
+            {% endif %}
+            <li class="nav-item">
+              <form method="post" action="{% url 'signout' %}">
+                {% csrf_token %}
+                <button class="nav-link border-0 bg-transparent" type="submit">
+                  Cerrar sesión
+                </button>
+              </form>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a href="/signup" class="nav-link">Crear cuenta</a>
+            </li>
+            <li class="nav-item">
+              <a href="/signin" class="nav-link">Iniciar sesión</a>
+            </li>
+            {% endif %}
+          </ul>
         </div>
-      </nav>
+      </div>
+    </nav>
 
-
-    {% block content %}
-    {% endblock %}
-</body>
+    {% block content %} {% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>

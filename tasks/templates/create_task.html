@@ -1,18 +1,70 @@
-{% extends "base.html" %}
-{% block content%}
-<main class="container">
-    <div class="row">
-        <div class="col-md-4 offset-md-4 mt-5">
-            <form action="/create/task/" method="POST" class="card card-body">
-            <h1>create task</h1>
-            {{error}}
-            {% csrf_token %}
-            {{form}}
-            <button class="btn btn-primary">
-            save
-            </button>
-            </form>
+{% extends "base.html" %} {% block content%}
+<main class="page-wrap">
+  <div class="row">
+    <div class="task-form-shell mt-4">
+      <form
+        action="/create/task/"
+        method="POST"
+        class="card card-body p-4 p-md-5"
+      >
+        <div class="eyebrow mb-2">Nueva actividad</div>
+        <h1 class="mb-2">Crear tarea</h1>
+        <p class="text-secondary mb-4">
+          Define la actividad, su fecha límite y quién debe recibirla.
+        </p>
+        {% if not students_available %}
+        <div class="alert alert-warning">
+          Primero registra una cuenta con rol Estudiante para poder asignarle
+          esta tarea.
         </div>
+        {% endif %} {% csrf_token %} {{form.non_field_errors}}
+        <div class="mb-3">
+          {{form.title.errors}} {{form.title.label_tag}} {{form.title}}
+        </div>
+        {{form.description.errors}} {{form.description.label_tag}}
+        <div class="mb-3">{{form.description}}</div>
+        <div class="form-check mb-3">
+          {{form.important}} {{form.important.label_tag}}
+        </div>
+        <div class="mb-3 p-3 rounded-3" style="background: #f1f5f2">
+          {{form.subject.errors}} {{form.subject.label_tag}} {{form.subject}}
+        </div>
+        <div class="mb-3 p-3 rounded-3" style="background: #f1f5f2">
+          {{form.due_date.errors}} {{form.due_date.label_tag}} {{form.due_date}}
+        </div>
+        <div class="mb-3 p-3 rounded-3" style="background: #f1f5f2">
+          {{form.students.errors}} {{form.students.label_tag}}
+          <div id="students-list">{{form.students}}</div>
+          <small class="form-text">{{form.students.help_text}}</small>
+        </div>
+        <div class="form-check mb-3">
+          {{form.assign_all}} {{form.assign_all.label_tag}}
+        </div>
+        <button
+          class="btn btn-primary"
+          {%
+          if
+          not
+          students_available
+          %}disabled{%
+          endif
+          %}
+        >
+          Crear tarea
+        </button>
+      </form>
     </div>
+  </div>
 </main>
+<script>
+  const assignAll = document.getElementById("id_assign_all");
+  const students = document.querySelectorAll("input[name='students']");
+
+  assignAll.addEventListener("change", function () {
+    for (const student of students) {
+      student.checked = assignAll.checked;
+      student.disabled = assignAll.checked;
+    }
+  });
+</script>
 {% endblock %}

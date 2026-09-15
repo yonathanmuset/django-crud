@@ -1,0 +1,85 @@
+{% extends "base.html" %} {% block content %}
+<main class="page-wrap py-4 py-md-5">
+  <div class="toolbar mb-4">
+    <div>
+      <div class="eyebrow mb-2">Panel del profesor</div>
+      <h1 class="mb-0">Seguimiento de actividades</h1>
+    </div>
+    <a class="btn btn-primary" href="{% url 'create_task' %}">Nueva tarea</a>
+  </div>
+
+  <h2 class="h4">Mis asignaturas</h2>
+  {% if subjects %}
+  <div class="list-group flex-row-wrap mb-5">
+    {% for subject in subjects %}
+    <div
+      class="list-group-item d-flex justify-content-between align-items-center"
+    >
+      <span
+        ><strong>{{ subject.name }}</strong> · {{ subject.students.count }}
+        estudiantes</span
+      >
+      <a
+        class="btn btn-outline-secondary"
+        href="{% url 'enroll_students' subject.id %}"
+        >Inscribir estudiantes</a
+      >
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p>Aún no has creado asignaturas.</p>
+  {% endif %}
+
+  <div class="dashboard-columns">
+    <section class="dashboard-column">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">Tareas enviadas</h2>
+        <span class="badge text-bg-secondary">{{ sent_tasks|length }}</span>
+      </div>
+      <div class="list-group">
+        {% if sent_tasks %}
+          {% for task in sent_tasks %}
+            {% include "teacher_item.html" %}
+          {% endfor %}
+        {% else %}
+          <p class="text-muted">No hay tareas enviadas pendientes.</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="dashboard-column">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">Tareas por revisar</h2>
+        <span class="badge text-bg-warning">{{ review_tasks|length }}</span>
+      </div>
+      <div class="list-group">
+        {% if review_tasks %}
+          {% for task in review_tasks %}
+            {% include "teacher_item.html" %}
+          {% endfor %}
+        {% else %}
+          <p class="text-muted">No hay entregas pendientes de revisión.</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="dashboard-column">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">Tareas revisadas</h2>
+        <span class="badge text-bg-success">{{ reviewed_tasks|length }}</span>
+      </div>
+      <div class="list-group">
+        {% if reviewed_tasks %}
+          {% for task in reviewed_tasks %}
+            {% include "teacher_item.html" %}
+          {% endfor %}
+        {% else %}
+          <p class="text-muted">Todavía no hay tareas calificadas.</p>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+</main>
+{% endblock %}
+</content>
