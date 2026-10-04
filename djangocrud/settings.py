@@ -14,10 +14,10 @@ from pathlib import Path
 import os
 import secrets
 import importlib.util
+import cloudinary
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -30,6 +30,31 @@ DEBUG = (
     else not bool(os.environ.get("RENDER") or os.environ.get("DATABASE_URL"))
 )
 
+CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME")
+CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY")
+CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET")
+CLOUDINARY_CREDENTIALS = (
+    CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET,
+)
+if any(CLOUDINARY_CREDENTIALS) and not all(CLOUDINARY_CREDENTIALS):
+    raise RuntimeError(
+        "Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and "
+        "CLOUDINARY_API_SECRET together."
+    )
+if all(CLOUDINARY_CREDENTIALS):
+    cloudinary.config(
+        cloud_name=CLOUDINARY_CLOUD_NAME,
+        api_key=CLOUDINARY_API_KEY,
+        api_secret=CLOUDINARY_API_SECRET,
+        secure=True,
+    )
+elif not DEBUG:
+    raise RuntimeError(
+        "Cloudinary credentials must be configured when DEBUG is False."
+    )
+
 # Production must always receive SECRET_KEY from its environment.
 SECRET_KEY = os.environ.get("SECRET_KEY")
 if not SECRET_KEY:
@@ -40,9 +65,14 @@ if not SECRET_KEY:
 
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+    for host in os.environ.get(
+        "ALLOWED_HOSTS", "127.0.0.1,localhost,testserver"
+    ).split(",")
     if host.strip()
 ]
+render_hostname = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if render_hostname and render_hostname not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_hostname)
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
@@ -59,6 +89,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "cloudinary",
     "tasks",
 ]
 
@@ -154,13 +185,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [
+    BASE_DIR / "tasks" / "static",
+]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", BASE_DIR / "media"))
 
 STATIC_STORAGE_BACKEND = (
     "whitenoise.storage.CompressedManifestStaticFilesStorage"
-    if importlib.util.find_spec("whitenoise")
+    if not DEBUG and importlib.util.find_spec("whitenoise")
     else "django.contrib.staticfiles.storage.StaticFilesStorage"
 )
 STORAGES = {"staticfiles": {"BACKEND": STATIC_STORAGE_BACKEND}}

@@ -8,8 +8,54 @@
       <p>{{ task.description }}</p>
       <p>Fecha límite: {{ task.due_date|date:"d/m/Y H:i" }}</p>
       {{ form.non_field_errors }} {{ form.as_p }}
+
+      <!-- Contenedor de vista previa de la imagen -->
+      <div id="imagePreview" style="display: none; margin-top: 15px;">
+        <!-- Miniatura con atributos para abrir el modal -->
+        <img src="" alt="Vista previa de tu entrega" 
+             class="img-thumbnail shadow-sm object-fit-cover mt-2 mb-2" 
+             style="max-width: 250px; height: 150px; cursor: pointer; transition: 0.3s;" 
+             data-bs-toggle="modal" 
+             data-bs-target="#previewModal">
+        <p class="text-muted small">Haz clic en tu imagen para ampliarla</p>
+      </div>
+
       <button class="btn btn-success">Enviar actividad</button>
     </form>
+
+    <!-- Modal de Bootstrap para vista del estudiante -->
+    <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-transparent border-0">
+          <div class="modal-header border-0 pb-0 justify-content-end">
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body text-center pt-0">
+            <img src="" class="img-fluid rounded shadow" style="max-height: 85vh;" alt="Vista completa de tu entrega">
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-</main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const fileInput = document.querySelector('input[type="file"]');
+      const preview = document.getElementById("imagePreview");
+      const modalImage = preview.querySelector("img");
+
+      if (fileInput && preview) {
+        fileInput.addEventListener("change", function (e) {
+          const file = e.target.files[0];
+
+          if (file && file.type.startsWith("image/")) {
+            const objectUrl = URL.createObjectURL(file);
+            preview.style.display = "block";
+            modalImage.src = objectUrl;
+            modalImage.alt = "Vista completa de tu entrega";
+          }
+        });
+      }
+    });
+  </script>
 {% endblock %}

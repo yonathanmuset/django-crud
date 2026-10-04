@@ -25,14 +25,10 @@
 
   <div class="d-flex justify-content-between align-items-center">
     <span>
-      {% if task.is_graded %} Nota: <strong>{{ task.score }}/20</strong>
-      {% else %} Sin calificar {% endif %}
+      {% if task.is_graded %}Nota: <strong>{{ task.score }}/20{% else %}Sin calificar{% endif %}
     </span>
-
     {% if task.submitted and not task.is_graded %}
-    <a class="btn btn-primary btn-sm" href="{% url 'grade_task' task.id %}"
-      >Revisar y calificar</a
-    >
+    <a class="btn btn-primary btn-sm" href="{% url 'grade_task' task.id %}" >Revisar y calificar</a>
     {% elif task.is_graded %}
     <a
       class="btn btn-outline-secondary btn-sm"

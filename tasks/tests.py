@@ -1,5 +1,7 @@
 from datetime import timedelta
+from unittest.mock import patch
 
+import cloudinary
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -21,6 +23,12 @@ class AcademicFlowTests(TestCase):
             username="student",
             password="Seguro2026!",
             role=User.Roles.ESTUDIANTE,
+        )
+        cloudinary.config(
+            cloud_name="test-cloud",
+            api_key="test-key",
+            api_secret="test-secret",
+            secure=True,
         )
         self.subject = Subject.objects.create(
             name="Ciencias",
@@ -53,18 +61,59 @@ class AcademicFlowTests(TestCase):
             User.Roles.ESTUDIANTE,
         )
 
+    def test_students_and_teachers_can_sign_in(self):
+        users = (
+            User.objects.create_user(
+                username="signin-student",
+                password="ValidTestPass2026!",
+                role=User.Roles.ESTUDIANTE,
+            ),
+            User.objects.create_user(
+                username="signin-teacher",
+                password="ValidTestPass2026!",
+                role=User.Roles.PROFESOR,
+            ),
+        )
+        for user in users:
+            with self.subTest(role=user.role):
+                self.client.logout()
+                response = self.client.post(
+                    reverse("signin"),
+                    {"username": user.username, "password": "ValidTestPass2026!"},
+                )
+                self.assertEqual(response.status_code, 302)
+                self.assertEqual(response.url, reverse("role_dashboard"))
+                self.assertEqual(
+                    int(self.client.session["_auth_user_id"]),
+                    user.pk,
+                )
+
     def test_student_can_submit_and_teacher_can_grade(self):
         self.client.force_login(self.student)
-        response = self.client.post(
-            reverse("submit_task", args=[self.task.id]),
-            {"text": "Mi respuesta", "file": SimpleUploadedFile("answer.txt", b"ok")},
-        )
+        with patch(
+            "cloudinary.models.uploader.upload_resource",
+            return_value="image/upload/v1/entregas/answer.jpg",
+        ) as upload:
+            response = self.client.post(
+                reverse("submit_task", args=[self.task.id]),
+                {
+                    "text": "Mi respuesta",
+                    "file": SimpleUploadedFile("answer.jpg", b"fake image data"),
+                },
+            )
+        upload.assert_called_once()
         self.assertRedirects(response, reverse("estudiante_dashboard"))
         self.task.refresh_from_db()
         self.assertTrue(self.task.completed)
         self.assertTrue(Submission.objects.filter(task=self.task).exists())
+        submission = Submission.objects.get(task=self.task)
+        self.assertTrue(submission.is_image)
 
         self.client.force_login(self.teacher)
+        review_response = self.client.get(reverse("grade_task", args=[self.task.id]))
+        self.assertContains(review_response, "Archivo adjunto")
+        self.assertContains(review_response, "answer.jpg")
+
         response = self.client.post(
             reverse("grade_task", args=[self.task.id]),
             {"score": 15},

@@ -50,7 +50,7 @@ urlpatterns = [
     ),
     path(
         "tasks/<int:task_id>/complete/",
-        views.submit_task,
+        views.complete_task,
         name="complete_task",
     ),
     path("tasks/<int:task_id>/submit/", views.submit_task, name="submit_task"),

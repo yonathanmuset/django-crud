@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
+from cloudinary.models import CloudinaryField
+from cloudinary.models import CloudinaryField
 
 
 class User(AbstractUser):
@@ -140,8 +142,23 @@ class Submission(models.Model):
         related_name="submission",
     )
     text = models.TextField(blank=True)
-    file = models.FileField(upload_to="submissions/%Y/%m/%d/", blank=True)
+    file = CloudinaryField("entregas", blank=True, null=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def is_image(self):
+        if not self.file:
+            return False
+        file_format = getattr(self.file, "format", None)
+        if not file_format:
+            file_format = self.file.name.rsplit(".", 1)[-1]
+        return file_format.lower() in {
+            "jpg",
+            "jpeg",
+            "png",
+            "gif",
+            "webp",
+        }
 
     def __str__(self):
         return f"Entrega de {self.task.student.username}: {self.task.title}"
