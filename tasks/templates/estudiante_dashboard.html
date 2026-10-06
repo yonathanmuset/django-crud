@@ -77,6 +77,31 @@
             Aprobada{% elif task.is_graded %}Nota: {{ task.score }}/20 · No
             aprobada{% else %}Nota: Pendiente de calificación{% endif %}
           </p>
+          {% if task.submitted and task.submission.file %}
+          <div class="mb-3">
+            <h4 class="h6">Mi archivo entregado</h4>
+            {% if task.submission.is_image %}
+            <button
+              type="button"
+              class="btn p-0 border-0 submission-image"
+              data-image-url="{{ task.submission.file.url }}"
+              aria-label="Ampliar imagen entregada para {{ task.title }}"
+            >
+              <img
+                src="{{ task.submission.file.url }}"
+                alt="Imagen entregada para {{ task.title }}"
+                class="img-thumbnail"
+                style="max-width: 250px; max-height: 180px; object-fit: contain"
+              />
+            </button>
+            <p class="text-muted small mb-0">Haz clic en la imagen para ampliarla.</p>
+            {% else %}
+            <a href="{{ task.submission.file.url }}" target="_blank" rel="noopener">
+              Abrir o descargar el archivo entregado
+            </a>
+            {% endif %}
+          </div>
+          {% endif %}
           <form
             method="post"
             action="{% url 'archive_task_for_student' task.id %}"
@@ -143,6 +168,15 @@
     const modal = new bootstrap.Modal(document.getElementById("imageModal"));
     const modalImage = document.getElementById("modalImage");
     const imageInfo = document.getElementById("imageInfo");
+
+    document.querySelectorAll(".submission-image").forEach(function (button) {
+      button.addEventListener("click", function () {
+        const thumbnail = button.querySelector("img");
+        modalImage.src = button.dataset.imageUrl;
+        modalImage.alt = thumbnail.alt;
+        modal.show();
+      });
+    });
 
     // Función para abrir el modal con una imagen
     window.openImageModal = function (src, alt, title = "") {

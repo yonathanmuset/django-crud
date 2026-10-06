@@ -12,11 +12,11 @@
       <!-- Contenedor de vista previa de la imagen -->
       <div id="imagePreview" style="display: none; margin-top: 15px;">
         <!-- Miniatura con atributos para abrir el modal -->
-        <img src="" alt="Vista previa de tu entrega" 
+        <img id="submissionPreviewThumbnail" src="" alt="Vista previa de tu entrega" 
              class="img-thumbnail shadow-sm object-fit-cover mt-2 mb-2" 
              style="max-width: 250px; height: 150px; cursor: pointer; transition: 0.3s;" 
-             data-bs-toggle="modal" 
-             data-bs-target="#previewModal">
+             role="button"
+             tabindex="0">
         <p class="text-muted small">Haz clic en tu imagen para ampliarla</p>
       </div>
 
@@ -31,7 +31,7 @@
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body text-center pt-0">
-            <img src="" class="img-fluid rounded shadow" style="max-height: 85vh;" alt="Vista completa de tu entrega">
+            <img id="previewModalImage" src="" class="img-fluid rounded shadow" style="max-height: 85vh;" alt="Vista completa de tu entrega">
           </div>
         </div>
       </div>
@@ -42,17 +42,54 @@
     document.addEventListener("DOMContentLoaded", function () {
       const fileInput = document.querySelector('input[type="file"]');
       const preview = document.getElementById("imagePreview");
-      const modalImage = preview.querySelector("img");
+      const thumbnail = document.getElementById("submissionPreviewThumbnail");
+      const modalImage = document.getElementById("previewModalImage");
+      const modalElement = document.getElementById("previewModal");
+      const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+      let objectUrl = null;
 
-      if (fileInput && preview) {
+      if (fileInput && preview && thumbnail && modalImage) {
+        function openPreviewModal() {
+          if (!thumbnail.getAttribute("src")) {
+            return;
+          }
+          modalImage.src = thumbnail.src;
+          modalImage.alt = thumbnail.alt;
+          modal.show();
+        }
+
+        thumbnail.addEventListener("click", openPreviewModal);
+        thumbnail.addEventListener("keydown", function (event) {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openPreviewModal();
+          }
+        });
+
         fileInput.addEventListener("change", function (e) {
           const file = e.target.files[0];
+          if (objectUrl) {
+            URL.revokeObjectURL(objectUrl);
+            objectUrl = null;
+          }
 
           if (file && file.type.startsWith("image/")) {
-            const objectUrl = URL.createObjectURL(file);
+            objectUrl = URL.createObjectURL(file);
             preview.style.display = "block";
+            thumbnail.src = objectUrl;
             modalImage.src = objectUrl;
+            thumbnail.alt = "Vista previa de " + file.name;
             modalImage.alt = "Vista completa de tu entrega";
+          } else {
+            preview.style.display = "none";
+            thumbnail.removeAttribute("src");
+            modalImage.removeAttribute("src");
+          }
+        });
+
+        window.addEventListener("pagehide", function () {
+          if (objectUrl) {
+            URL.revokeObjectURL(objectUrl);
           }
         });
       }

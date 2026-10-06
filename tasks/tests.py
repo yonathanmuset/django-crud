@@ -90,6 +90,12 @@ class AcademicFlowTests(TestCase):
 
     def test_student_can_submit_and_teacher_can_grade(self):
         self.client.force_login(self.student)
+        submission_page = self.client.get(
+            reverse("submit_task", args=[self.task.id])
+        )
+        self.assertContains(submission_page, 'id="submissionPreviewThumbnail"')
+        self.assertContains(submission_page, 'id="previewModalImage"')
+
         with patch(
             "cloudinary.models.uploader.upload_resource",
             return_value="image/upload/v1/entregas/answer.jpg",
@@ -108,6 +114,17 @@ class AcademicFlowTests(TestCase):
         self.assertTrue(Submission.objects.filter(task=self.task).exists())
         submission = Submission.objects.get(task=self.task)
         self.assertTrue(submission.is_image)
+        student_dashboard_response = self.client.get(
+            reverse("estudiante_dashboard")
+        )
+        self.assertContains(
+            student_dashboard_response,
+            "Mi archivo entregado",
+        )
+        self.assertContains(
+            student_dashboard_response,
+            "https://res.cloudinary.com/test-cloud/image/upload/v1/entregas/answer.jpg",
+        )
 
         self.client.force_login(self.teacher)
         review_response = self.client.get(reverse("grade_task", args=[self.task.id]))

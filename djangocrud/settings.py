@@ -15,9 +15,12 @@ import os
 import secrets
 import importlib.util
 import cloudinary
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -51,10 +54,7 @@ if all(CLOUDINARY_CREDENTIALS):
         secure=True,
     )
 elif not DEBUG:
-    raise RuntimeError(
-        "Cloudinary credentials must be configured when DEBUG is False."
-    )
-
+    raise RuntimeError("Cloudinary credentials must be configured when DEBUG is False.")
 # Production must always receive SECRET_KEY from its environment.
 SECRET_KEY = os.environ.get("SECRET_KEY")
 if not SECRET_KEY:
@@ -65,9 +65,9 @@ if not SECRET_KEY:
 
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.environ.get(
-        "ALLOWED_HOSTS", "127.0.0.1,localhost,testserver"
-    ).split(",")
+    for host in os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost,testserver").split(
+        ","
+    )
     if host.strip()
 ]
 render_hostname = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "cloudinary_storage",
     "django.contrib.staticfiles",
     "cloudinary",
     "tasks",
