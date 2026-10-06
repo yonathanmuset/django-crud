@@ -185,20 +185,26 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
-STATICFILES_DIRS = [
-    BASE_DIR / "tasks" / "static",
-]
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", BASE_DIR / "media"))
 
-STATIC_STORAGE_BACKEND = (
+STATICFILES_BACKEND = (
     "whitenoise.storage.CompressedManifestStaticFilesStorage"
     if not DEBUG and importlib.util.find_spec("whitenoise")
     else "django.contrib.staticfiles.storage.StaticFilesStorage"
 )
-STORAGES = {"staticfiles": {"BACKEND": STATIC_STORAGE_BACKEND}}
+# django-cloudinary-storage's collectstatic command still reads this legacy setting.
+STATICFILES_STORAGE = STATICFILES_BACKEND
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": STATICFILES_BACKEND,
+    },
+}
 
 if os.environ.get("AWS_STORAGE_BUCKET_NAME"):
     STORAGES["default"] = {
